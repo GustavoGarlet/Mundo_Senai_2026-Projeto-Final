@@ -1,0 +1,15 @@
+{
+  "name": "kbit-rfid-control-center",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Painel web para Arduino Uno e leitor RFID RC522",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@serialport/parser-readline": "^12.0.0",
+    "express": "^4.21.2",
+    "serialport": "^12.0.0"
+  }
+}

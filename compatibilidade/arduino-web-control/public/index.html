@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title>KBIT | Controle de Acesso RFID</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand-mark">K</div>
+    <div>
+      <p class="eyebrow">SISTEMA DE AUTOMAÇÃO</p>
+      <h1>KBIT Control Center</h1>
+    </div>
+    <span class="pill" id="connectionBadge"><span class="dot"></span><span id="connectionText">Desconectado</span></span>
+  </header>
+
+  <main class="layout">
+    <section class="hero panel">
+      <div>
+        <p class="eyebrow">PAINEL DE CONTROLE DE ACESSO</p>
+        <h2>Seu acesso.<br><span>Seu controle.</span></h2>
+        <label for="autorizacao" class="autorizacao-check">
+          <input type="checkbox" name="autorizacao" value="autorizado" required> Autorizar acesso
+        </label>
+        <p class="muted">Cadastre cartões RFID, controle os LEDs e acompanhe as leituras do Arduino em tempo real.</p>
+      </div>
+      <div class="hero-icon" aria-hidden="true">⌁</div>
+    </section>
+
+    
+    <!-- Contador de leituras RFID -->
+    <section class="panel counter-panel">
+      <div class="counter-icon">#</div>
+
+      <div class="counter-info">
+        <p class="eyebrow">ESTATÍSTICAS / RFID</p>
+        <h3>Total de leituras</h3>
+        <p class="muted">Quantidade de vezes que cartões foram aproximados do leitor.</p>
+      </div>
+
+      <div class="counter-value">
+        <span id="rfidCounter">0</span>
+        <small>LEITURAS CADASTRADAS</small>
+
+      </div>
+      <div class="counter-value1">
+        <!-- escrita color red1 -->
+        <span id="rfidCounter1" style="color: #ed0a0a;">0</span>
+        <!-- escrita color red2 -->
+        <small style="color: #ed0a0a;">LEITURAS NÃO CADASTRADAS</small>
+      </div>
+    </section>
+
+    <section class="panel connection-panel">
+      <div class="section-heading">
+        <div><p class="eyebrow">CONEXÃO</p><h3>Conectar Arduino</h3></div>
+      </div>
+      <div class="mode-switch" role="group" aria-label="Modo de conexão">
+        <button class="mode-button active" id="usbMode" type="button">USB direto</button>
+        <button class="mode-button" id="wifiMode" type="button">Wi-Fi / rede</button>
+      </div>
+      <div id="usbPane" class="connection-pane">
+        <p class="muted">Conexão direta pelo navegador. Use Chrome ou Edge atualizado em localhost ou HTTPS.</p>
+        <button class="primary-button" id="connectUsb" type="button">Conectar via USB</button>
+        <button class="secondary-button hidden" id="disconnectUsb" type="button">Desconectar USB</button>
+      </div>
+      <div id="wifiPane" class="connection-pane hidden">
+        <p class="muted">O servidor Node.js conecta o Arduino por USB e compartilha os dados com dispositivos na mesma rede.</p>
+        <label for="portSelect">Porta serial do Arduino</label>
+        <div class="inline-controls">
+          <select id="portSelect"><option value="">Clique em Atualizar</option></select>
+          <button class="secondary-button" id="refreshPorts" type="button">Atualizar</button>
+        </div>
+        <button class="primary-button" id="connectServer" type="button">Conectar pelo servidor</button>
+        <button class="secondary-button hidden" id="disconnectServer" type="button">Desconectar servidor</button>
+      </div>
+      <p class="feedback" id="connectionMessage" role="status">Escolha como conectar para começar.</p>
+    </section>
+
+    <section class="panel live-access-panel" aria-live="polite">
+      <div class="section-heading">
+        <div><p class="eyebrow">TEMPO REAL / RFID</p><h3>Última leitura do cartão</h3></div>
+        <span class="live-indicator"><span></span> AO VIVO</span>
+      </div>
+      <div class="access-result waiting" id="accessResult">
+        <div class="access-avatar" id="accessAvatar">?</div>
+        <div class="access-details">
+          <span class="access-status" id="accessStatus">AGUARDANDO LEITURA</span>
+          <h4 id="accessName">Nenhum cartão aproximado</h4>
+          <p id="accessUid">Aproxime um cartão do leitor RFID.</p>
+        </div>
+      </div>
+      <div class="access-meta">
+        <div><span>HORÁRIO</span><strong id="accessTime">--:--:--</strong></div>
+        <div><span>RESULTADO</span><strong id="accessDecision">Aguardando</strong></div>
+      </div>
+      <p class="muted access-hint">Quando um cartão for lido, o nome cadastrado, o UID e o resultado da tentativa aparecerão aqui.</p>
+    </section>
+
+    <section class="panel registration-panel">
+      <div class="section-heading">
+        <div><p class="eyebrow">02 / CADASTRO RFID</p><h3>Cadastrar cartão</h3></div>
+        <span class="small-status" id="registrationStatus">Aguardando cartão</span>
+      </div>
+      <p class="muted">Com o Arduino conectado, pressione o botão físico de cadastro e aproxime um cartão. Depois informe o nome e salve.</p>
+      <label for="cardUid">Código UID do cartão</label>
+      <input id="cardUid" type="text" placeholder="Aguardando leitura do cartão" readonly>
+      <label for="cardName">Nome da pessoa</label>
+      <input id="cardName" type="text" maxlength="20" placeholder="Ex.: Kelven">
+      <button id="saveCard" class="primary-button" type="button" disabled>Salvar cartão</button>
+      <p class="feedback" id="registrationMessage" role="status">Conecte o Arduino e pressione o botão de cadastro.</p>
+      <div class="saved-cards">
+        <div class="section-heading compact">
+          <h4>Cartões cadastrados</h4>
+          <button class="text-button" id="refreshCards" type="button" disabled>Atualizar lista</button>
+        </div>
+        <div id="savedCards" class="saved-list"><p class="muted">A lista será carregada quando o Arduino conectar.</p></div>
+      </div>
+    </section>
+
+    <section class="panel controls-panel">
+      <div class="section-heading">
+        <div><p class="eyebrow">03 / SAÍDAS DIGITAIS</p><h3>Controle dos LEDs</h3></div>
+        <span class="small-status" id="modeLabel">Modo USB</span>
+      </div>
+      <div class="led-grid">
+        <article class="led-card" data-led="red">
+          <div class="led-symbol red"></div>
+          <div><h4>LED vermelho</h4><p>Pino digital D8</p></div>
+          <span class="state" id="redState">Desligado</span>
+          <div class="button-row">
+            <button class="on-button" data-command="RED_ON" disabled>Ligar</button>
+            <button class="off-button" data-command="RED_OFF" disabled>Desligar</button>
+          </div>
+        </article>
+        <article class="led-card" data-led="green">
+          <div class="led-symbol green"></div>
+          <div><h4>LED verde</h4><p>Pino digital D9</p></div>
+          <span class="state" id="greenState">Desligado</span>
+          <div class="button-row">
+            <button class="on-button" data-command="GREEN_ON" disabled>Ligar</button>
+            <button class="off-button" data-command="GREEN_OFF" disabled>Desligar</button>
+          </div>
+        </article>
+        <article class="led-card" data-led="blue">
+          <div class="led-symbol blue"></div>
+          <div><h4>LED azul</h4><p>Pino digital D10</p></div>
+          <span class="state" id="blueState">Desligado</span>
+          <div class="button-row">
+            <button class="on-button" data-command="BLUE_ON" disabled>Ligar</button>
+            <button class="off-button" data-command="BLUE_OFF" disabled>Desligar</button>
+          </div>
+        </article>
+      </div>
+      <div class="master-controls">
+        <button id="allOn" class="primary-button" type="button" disabled>Ligar todos</button>
+        <button id="allOff" class="secondary-button" type="button" disabled>Desligar todos</button>
+        <button id="readStatus" class="secondary-button" type="button" disabled>Ler estado</button>
+      </div>
+    </section>
+
+    <section class="panel log-panel">
+      <div class="section-heading">
+        <div><p class="eyebrow">04 / MONITORAMENTO</p><h3>Registro de eventos</h3></div>
+        <button class="text-button" id="clearLog" type="button">Limpar</button>
+      </div>
+      <div id="eventLog" class="event-log" aria-live="polite"><p class="log-entry"><span>--:--:--</span> Painel iniciado. Aguardando conexão.</p></div>
+    </section>
+
+    <footer class="footer">KBIT • Projeto didático • HTML + CSS + JavaScript + Arduino Uno</footer>
+  </main>
+</body>
+</html>
